@@ -24,13 +24,13 @@ random.seed(9001)
 from random import randint
 import statistics
 
-__author__ = "Your Name"
+__author__ = "Goulancourt Rebecca & Jamay Théo"
 __copyright__ = "Universite Paris Diderot"
-__credits__ = ["Your Name"]
+__credits__ = ["Goulancourt Rebecca & Jamay Théo"]
 __license__ = "GPL"
 __version__ = "1.0.0"
-__maintainer__ = "Your Name"
-__email__ = "your@email.fr"
+__maintainer__ = "Goulancourt Rebecca & Jamay Théo"
+__email__ = "rgoulancourt@yahoo.com, jamay.theo@gmail.com"
 __status__ = "Developpement"
 
 def isfile(path):
@@ -45,7 +45,6 @@ def isfile(path):
             msg = "{0} does not exist.".format(path)
         raise argparse.ArgumentTypeError(msg)
     return path
-
 
 def get_arguments():
     """Retrieves the arguments of the program.
@@ -68,24 +67,76 @@ def get_arguments():
 
 
 def read_fastq(fastq_file):
-    pass
+    with open(fastq_file, "r") as fasta_file : 
+        lines = fasta_file.readlines()
+        for i in range(1, len(lines), 4) :
+            yield lines[i].strip()
+
 
 
 def cut_kmer(read, kmer_size):
-    pass
+    '''
+    for i in range(len(read) - len(kmer_size) - 1) :
+        yield read[i:i + kmer_size]
+    '''
+    
+    '''
+    start = 0
+    for i in read :
+        print(read)
+    for i in range(len(list(read))) :
+    #for i in enumerate(read) :
+        k_mer = sequence[start:kmer_size]
+        start = start + kmer_size
+        k_mer = ''.join(map(str, k_mer)) 
+        print(k_mer)
+        yield k_mer
+    '''
 
+    l = len(read)
+    for i in range(0, l - kmer_size) : 
+        kmer = read[i:i + kmer_size]
+        yield kmer
+  
 
 def build_kmer_dict(fastq_file, kmer_size):
-    pass
+    k_dict = {}
+    read = read_fastq(fastq_file)
+    cut = cut_kmer(fastq_file, kmer_size)
+
+    for i in range(len(read)) :
+        if k not in k_dict :
+            k_dict[k] = 1
+        else :
+            k_dict[k] += 1
+
+    yield k_dict
+
+
+
 
 
 def build_graph(kmer_dict):
-    pass
+	l = len(kmer_dict.keys())
+	v = kmer_dict.values()
+	empty_G = nx.Graph()
+	G = empty_G.add_nodes_from(l, v)        
 
 
-def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
-    pass
 
+
+
+
+#https://stackoverflow.com/questions/56918460/how-to-fix-error-object-of-type-generator-has-no-len-python/56918487
+
+#def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+    
+
+
+
+
+
+'''
 def std(data):
     pass
 
@@ -152,7 +203,7 @@ def save_graph(graph, graph_file):
     with open(graph_file, "wt") as save:
             pickle.dump(graph, save)
 
-
+'''
 #==============================================================
 # Main program
 #==============================================================
@@ -162,6 +213,9 @@ def main():
     """
     # Get arguments
     args = get_arguments()
+    seq = read_fastq(args.fastq_file)
+    kmer = cut_kmer(seq, args.kmer_size)
+    dico = build_kmer_dict(seq, kmer)
 
     # Fonctions de dessin du graphe
     # A decommenter si vous souhaitez visualiser un petit 
