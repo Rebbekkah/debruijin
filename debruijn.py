@@ -34,103 +34,142 @@ __email__ = "rgoulancourt@yahoo.com, jamay.theo@gmail.com"
 __status__ = "Developpement"
 
 def isfile(path):
-    """Check if path is an existing file.
-      :Parameters:
-          path: Path to the file
-    """
-    if not os.path.isfile(path):
-        if os.path.isdir(path):
-            msg = "{0} is a directory".format(path)
-        else:
-            msg = "{0} does not exist.".format(path)
-        raise argparse.ArgumentTypeError(msg)
-    return path
+	"""Check if path is an existing file.
+	  :Parameters:
+		  path: Path to the file
+	"""
+	if not os.path.isfile(path):
+		if os.path.isdir(path):
+			msg = "{0} is a directory".format(path)
+		else:
+			msg = "{0} does not exist.".format(path)
+		raise argparse.ArgumentTypeError(msg)
+	return path
 
 def get_arguments():
-    """Retrieves the arguments of the program.
-      Returns: An object that contains the arguments
-    """
-    # Parsing arguments
-    parser = argparse.ArgumentParser(description=__doc__, usage=
-                                     "{0} -h"
-                                     .format(sys.argv[0]))
-    parser.add_argument('-i', dest='fastq_file', type=isfile,
-                        required=True, help="Fastq file")
-    parser.add_argument('-k', dest='kmer_size', type=int,
-                        default=22, help="K-mer size (default 21)")
-    parser.add_argument('-o', dest='output_file', type=str,
-                        default=os.curdir + os.sep + "contigs.fasta",
-                        help="Output contigs in fasta file")
-    parser.add_argument('-f', dest='graphimg_file', type=str,
-                        help="Save graph as image (png)")
-    return parser.parse_args()
+	"""Retrieves the arguments of the program.
+	  Returns: An object that contains the arguments
+	"""
+	# Parsing arguments
+	parser = argparse.ArgumentParser(description=__doc__, usage=
+									 "{0} -h"
+									 .format(sys.argv[0]))
+	parser.add_argument('-i', dest='fastq_file', type=isfile,
+						required=True, help="Fastq file")
+	parser.add_argument('-k', dest='kmer_size', type=int,
+						default=22, help="K-mer size (default 21)")
+	parser.add_argument('-o', dest='output_file', type=str,
+						default=os.curdir + os.sep + "contigs.fasta",
+						help="Output contigs in fasta file")
+	parser.add_argument('-f', dest='graphimg_file', type=str,
+						help="Save graph as image (png)")
+	return parser.parse_args()
 
 
 def read_fastq(fastq_file):
-    with open(fastq_file, "r") as fasta_file : 
-        lines = fasta_file.readlines()
-        for i in range(1, len(lines), 4) :
-            yield lines[i].strip()
-
+	with open(fastq_file, "r") as fasta_file : 
+		lines = fasta_file.readlines()
+		for i in range(1, len(lines), 4) :
+			#print(lines)
+			yield lines[i].strip()
 
 
 def cut_kmer(read, kmer_size):
-    '''
-    for i in range(len(read) - len(kmer_size) - 1) :
-        yield read[i:i + kmer_size]
-    '''
-    
-    '''
-    start = 0
-    for i in read :
-        print(read)
-    for i in range(len(list(read))) :
-    #for i in enumerate(read) :
-        k_mer = sequence[start:kmer_size]
-        start = start + kmer_size
-        k_mer = ''.join(map(str, k_mer)) 
-        print(k_mer)
-        yield k_mer
-    '''
+	'''
+	for i in range(len(read) - len(kmer_size) - 1) :
+		yield read[i:i + kmer_size]
+	'''
+	
+	'''
+	start = 0
+	for i in read :
+		print(read)
+	for i in range(len(list(read))) :
+	#for i in enumerate(read) :
+		k_mer = sequence[start:kmer_size]
+		start = start + kmer_size
+		k_mer = ''.join(map(str, k_mer)) 
+		print(k_mer)
+		yield k_mer
+	'''
 
-    l = len(read)
-    for i in range(0, l - kmer_size) : 
-        kmer = read[i:i + kmer_size]
-        yield kmer
+
+
+	l = len(list(read))
+	#l = len(read)
+	print("longueur = {}".format(l))
+	#print(read)
+	print(type(read))
+	#read_list = list(read)
+	#read_list.append(read)
+	#print(read_list)
+
+	#print(type(read))
+	#for r in read :
+	#	print(r)
+
+	#row_read = next(read)
+	#r = list(read.next())
+	#print(r)
+	for i in range(0, l - kmer_size, kmer_size) : 
+		#kmer = read.next()
+		#kmer = next(read)
+		#print(kmer)
+		#r = list(read.next())
+		kmer = read[i:i + kmer_size]
+		#kmer = read_list[i:i + kmer_size]
+		#kmer = row_read[i:i + kmer_size]
+		yield kmer
   
-
+  
 def build_kmer_dict(fastq_file, kmer_size):
-    k_dict = {}
-    read = read_fastq(fastq_file)
-    cut = cut_kmer(fastq_file, kmer_size)
+	kmer_dict = {}
+	read = read_fastq(fastq_file)
+	cut = cut_kmer(fastq_file, args.kmer_size)
 
-    for i in range(len(read)) :
-        if k not in k_dict :
-            k_dict[k] = 1
-        else :
-            k_dict[k] += 1
+	for i in range(len(read)) :
+		if k not in kmer_dict :
+			kmer_dict[k] = 1
+		else :
+			kmer_dict[k] += 1
 
-    yield k_dict
+	print(type(kmer_dict))
+	yield kmer_dict
 
 
 
 
 
 def build_graph(kmer_dict):
+	cle = list(kmer_dict.keys())
 	l = len(kmer_dict.keys())
-	v = kmer_dict.values()
-	empty_G = nx.Graph()
-	G = empty_G.add_nodes_from(l, v)        
+	weight = list(kmer_dict.values())
+	print(l)
+	print(type(weight))
+	print(weight)
+	empty_digraph = nx.DiGraph()
+
+	digraph = empty_digraph.add_nodes_from(cle)
+	for i in range(l - 1) :
+		val1 = cle[i]
+		val2 = cle[i + 1]
+		digraph.add_edge(val1, val2, weight[i])  
+		#digraph.add_edge(val1, val2, [, weight[i]])        
+
+	yield digraph
 
 
-
-
-
+def get_starting_nodes(graph):
+	nodes = list(graph.nodes)
+	print(nodes)
+	edges = list(digraph.edges)
+	print(edges)
+	for node in 
 
 #https://stackoverflow.com/questions/56918460/how-to-fix-error-object-of-type-generator-has-no-len-python/56918487
 
 #def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
-    
+	
 
 
 
@@ -138,95 +177,102 @@ def build_graph(kmer_dict):
 
 '''
 def std(data):
-    pass
+	pass
 
 
 def select_best_path(graph, path_list, path_length, weight_avg_list, 
-                     delete_entry_node=False, delete_sink_node=False):
-    pass
+					 delete_entry_node=False, delete_sink_node=False):
+	pass
 
 def path_average_weight(graph, path):
-    pass
+	pass
 
 def solve_bubble(graph, ancestor_node, descendant_node):
-    pass
+	pass
 
 def simplify_bubbles(graph):
-    pass
+	pass
 
 def solve_entry_tips(graph, starting_nodes):
-    pass
+	pass
 
 def solve_out_tips(graph, ending_nodes):
-    pass
+	pass
 
 def get_starting_nodes(graph):
-    pass
+	pass
 
 def get_sink_nodes(graph):
-    pass
+	pass
 
 def get_contigs(graph, starting_nodes, ending_nodes):
-    pass
+	pass
 
 def save_contigs(contigs_list, output_file):
-    pass
+	pass
 
 
 def fill(text, width=80):
-    """Split text with a line return to respect fasta format"""
-    return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
+	"""Split text with a line return to respect fasta format"""
+	return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
 
 def draw_graph(graph, graphimg_file):
-    """Draw the graph
-    """                                    
-    fig, ax = plt.subplots()
-    elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
-    #print(elarge)
-    esmall = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] <= 3]
-    #print(elarge)
-    # Draw the graph with networkx
-    #pos=nx.spring_layout(graph)
-    pos = nx.random_layout(graph)
-    nx.draw_networkx_nodes(graph, pos, node_size=6)
-    nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
-    nx.draw_networkx_edges(graph, pos, edgelist=esmall, width=6, alpha=0.5, 
-                           edge_color='b', style='dashed')
-    #nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
-    # save image
-    plt.savefig(graphimg_file)
+	"""Draw the graph
+	"""                                    
+	fig, ax = plt.subplots()
+	elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
+	#print(elarge)
+	esmall = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] <= 3]
+	#print(elarge)
+	# Draw the graph with networkx
+	#pos=nx.spring_layout(graph)
+	pos = nx.random_layout(graph)
+	nx.draw_networkx_nodes(graph, pos, node_size=6)
+	nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
+	nx.draw_networkx_edges(graph, pos, edgelist=esmall, width=6, alpha=0.5, 
+						   edge_color='b', style='dashed')
+	#nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
+	# save image
+	plt.savefig(graphimg_file)
 
 
 def save_graph(graph, graph_file):
-    """Save the graph with pickle
-    """
-    with open(graph_file, "wt") as save:
-            pickle.dump(graph, save)
+	"""Save the graph with pickle
+	"""
+	with open(graph_file, "wt") as save:
+			pickle.dump(graph, save)
 
 '''
+
 #==============================================================
 # Main program
 #==============================================================
 def main():
-    """
-    Main program function
-    """
-    # Get arguments
-    args = get_arguments()
-    seq = read_fastq(args.fastq_file)
-    kmer = cut_kmer(seq, args.kmer_size)
-    dico = build_kmer_dict(seq, kmer)
-
-    # Fonctions de dessin du graphe
-    # A decommenter si vous souhaitez visualiser un petit 
-    # graphe
-    # Plot the graph
-    # if args.graphimg_file:
-    #     draw_graph(graph, args.graphimg_file)
-    # Save the graph in file
-    # if args.graph_file:
-    #     save_graph(graph, args.graph_file)
+	"""
+	Main program function
+	"""
+	# Get arguments
+	args = get_arguments()
+	seq = read_fastq(args.fastq_file)
+	kmer = cut_kmer(seq, args.kmer_size)
+	dico = build_kmer_dict(seq, args.kmer_size)
+	digraph = build_graph(dico)
+	#for i in seq : 
+	#	print(i)
+	for i in kmer :
+		print(i)
+	#print(seq)
+	#print(kmer)
+	# Fonctions de dessin du graphe
+	# A decommenter si vous souhaitez visualiser un petit 
+	# graphe
+	# Plot the graph
+	# if args.graphimg_file:
+	#     draw_graph(graph, args.graphimg_file)
+	# Save the graph in file
+	# if args.graph_file:
+	#     save_graph(graph, args.graph_file)
 
 
 if __name__ == '__main__':
-    main()
+	main()
