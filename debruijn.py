@@ -162,9 +162,30 @@ def build_graph(kmer_dict):
 def get_starting_nodes(graph):
 	nodes = list(graph.nodes)
 	print(nodes)
-	edges = list(digraph.edges)
+	edges = list(graph.edges)
 	print(edges)
-	for node in 
+
+	start_node = graph.in_edge()
+
+
+	'''
+	for node in nodes :
+		if len(graph.adj[node]) > 1 :
+			start_node.append(node)
+	'''
+	yield start_node
+
+
+def get_sink_nodes(graph):
+	end_node = graph.out_edge()
+	yield end_node
+
+def get_contigs(graph, in_node, out_node):
+
+
+
+
+
 
 #https://stackoverflow.com/questions/56918460/how-to-fix-error-object-of-type-generator-has-no-len-python/56918487
 
@@ -257,10 +278,14 @@ def main():
 	kmer = cut_kmer(seq, args.kmer_size)
 	dico = build_kmer_dict(seq, args.kmer_size)
 	digraph = build_graph(dico)
+	in_nodes = get_starting_nodes(digraph)
+	out_nodes = get_sink_nodes(digraph)
+	contig = get_contigs(digraph, in_nodes, out_nodes)
+
 	#for i in seq : 
 	#	print(i)
-	for i in kmer :
-		print(i)
+	#for i in kmer :
+	#	print(i)
 	#print(seq)
 	#print(kmer)
 	# Fonctions de dessin du graphe
