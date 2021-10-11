@@ -158,7 +158,7 @@ def build_graph(kmer_dict):
 
 	yield digraph
 
-
+'''
 def get_starting_nodes(graph):
 	nodes = list(graph.nodes)
 	print(nodes)
@@ -167,19 +167,20 @@ def get_starting_nodes(graph):
 
 	start_node = graph.in_edge()
 
-
-	'''
+'''
+'''
 	for node in nodes :
 		if len(graph.adj[node]) > 1 :
 			start_node.append(node)
-	'''
+
 	yield start_node
-
-
+'''
+'''
 def get_sink_nodes(graph):
 	end_node = graph.out_edge()
 	yield end_node
-
+'''
+'''
 def get_contigs(graph, in_node, out_node):
 	contig = []
 
@@ -193,9 +194,8 @@ def get_contigs(graph, in_node, out_node):
 		contig.append(out_node[i])
 
 	contig = tuple(contig)
-
-
-
+	yield contig
+'''
 
 	'''
 	for in_n in graph.nodes :
@@ -215,11 +215,6 @@ def get_contigs(graph, in_node, out_node):
 #def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
 	
 
-
-
-
-
-'''
 def std(data):
 	pass
 
@@ -244,16 +239,43 @@ def solve_out_tips(graph, ending_nodes):
 	pass
 
 def get_starting_nodes(graph):
-	pass
+	nodes = list(graph.nodes)
+	print(nodes)
+	edges = list(graph.edges)
+	print(edges)
+
+	start_node = graph.in_edge()
+		yield start_node
+
 
 def get_sink_nodes(graph):
-	pass
+	end_node = graph.out_edge()
+	yield end_node
 
 def get_contigs(graph, starting_nodes, ending_nodes):
-	pass
+	contig = []
+
+	for i in starting_nodes :
+		contig[i] = starting_nodes[i]
+
+	for i + 1 in graph.nodes - 1 :
+		contig.append(graph.adj[i])
+
+	for i in ending_nodes :
+		contig.append(ending_nodes[i])
+
+	contig = tuple(contig)
+	yield contig
+
+
 
 def save_contigs(contigs_list, output_file):
-	pass
+	with open(output_file, "w") as filout :
+		for contig in contigs_list :
+			filout.write(contigs_list[i].strip())
+
+	fast = fill(output_file)
+	yield fast
 
 
 def fill(text, width=80):
@@ -286,7 +308,6 @@ def save_graph(graph, graph_file):
 	with open(graph_file, "wt") as save:
 			pickle.dump(graph, save)
 
-'''
 
 #==============================================================
 # Main program
@@ -304,6 +325,8 @@ def main():
 	in_nodes = get_starting_nodes(digraph)
 	out_nodes = get_sink_nodes(digraph)
 	contig = get_contigs(digraph, in_nodes, out_nodes)
+	save_contig = save_contigs(contig, args.output_file)
+	fasta = fill(save_contig)
 
 	#for i in seq : 
 	#	print(i)
