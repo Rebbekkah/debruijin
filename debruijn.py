@@ -75,12 +75,10 @@ def read_fastq(fastq_file):
 
 
 def cut_kmer(read, kmer_size):
-	'''
-	for i in range(len(read) - len(kmer_size) - 1) :
+	for i in range(len(read) - (kmer_size - 1)) :
 		yield read[i:i + kmer_size]
-	'''
-	
-	'''
+		
+'''
 	start = 0
 	for i in read :
 		print(read)
@@ -91,15 +89,14 @@ def cut_kmer(read, kmer_size):
 		k_mer = ''.join(map(str, k_mer)) 
 		print(k_mer)
 		yield k_mer
-	'''
+	
 
 
-
+	#l = len(read_list)
 	l = len(list(read))
-	#l = len(read)
-	print("longueur = {}".format(l))
+	#print("longueur = {}".format(l))
 	#print(read)
-	print(type(read))
+	#print(type(read))
 	#read_list = list(read)
 	#read_list.append(read)
 	#print(read_list)
@@ -111,7 +108,7 @@ def cut_kmer(read, kmer_size):
 	#row_read = next(read)
 	#r = list(read.next())
 	#print(r)
-	for i in range(0, l - kmer_size, kmer_size) : 
+	for i in range(0, l - kmer_size - 1, kmer_size) : 
 		#kmer = read.next()
 		#kmer = next(read)
 		#print(kmer)
@@ -119,22 +116,23 @@ def cut_kmer(read, kmer_size):
 		kmer = read[i:i + kmer_size]
 		#kmer = read_list[i:i + kmer_size]
 		#kmer = row_read[i:i + kmer_size]
+		print(kmer)
 		yield kmer
-  
+  '''
   
 def build_kmer_dict(fastq_file, kmer_size):
 	kmer_dict = {}
-	read = read_fastq(fastq_file)
-	cut = cut_kmer(fastq_file, args.kmer_size)
+	gen_read = read_fastq(fastq_file)
+	#print(gen_read)
+	for read in gen_read :
+		cut = cut_kmer(read,kmer_size)
+		for k in cut :
+			if k not in kmer_dict :
+				kmer_dict[k] = 1
+			else :
+				kmer_dict[k] += 1
 
-	for i in range(len(read)) :
-		if k not in kmer_dict :
-			kmer_dict[k] = 1
-		else :
-			kmer_dict[k] += 1
-
-	print(type(kmer_dict))
-	yield kmer_dict
+	return kmer_dict
 
 
 
@@ -197,14 +195,14 @@ def get_contigs(graph, in_node, out_node):
 	yield contig
 '''
 
-	'''
+'''
 	for in_n in graph.nodes :
 		contig[i] = in_node[i]
 
 
 
 	for out_n in out_node :
-	'''
+'''
 
 
 
@@ -212,8 +210,8 @@ def get_contigs(graph, in_node, out_node):
 
 #https://stackoverflow.com/questions/56918460/how-to-fix-error-object-of-type-generator-has-no-len-python/56918487
 
-#def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
-	
+def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+	pass	
 
 def std(data):
 	pass
@@ -245,12 +243,13 @@ def get_starting_nodes(graph):
 	print(edges)
 
 	start_node = graph.in_edge()
-		yield start_node
+	yield start_node
 
 
 def get_sink_nodes(graph):
 	end_node = graph.out_edge()
 	yield end_node
+
 
 def get_contigs(graph, starting_nodes, ending_nodes):
 	contig = []
@@ -258,15 +257,14 @@ def get_contigs(graph, starting_nodes, ending_nodes):
 	for i in starting_nodes :
 		contig[i] = starting_nodes[i]
 
-	for i + 1 in graph.nodes - 1 :
-		contig.append(graph.adj[i])
+	#for i + 1 in graph.nodes - 1 :
+	#	contig.append(graph.adj[i])
 
 	for i in ending_nodes :
 		contig.append(ending_nodes[i])
 
 	contig = tuple(contig)
 	yield contig
-
 
 
 def save_contigs(contigs_list, output_file):
@@ -320,18 +318,18 @@ def main():
 	args = get_arguments()
 	seq = read_fastq(args.fastq_file)
 	kmer = cut_kmer(seq, args.kmer_size)
-	dico = build_kmer_dict(seq, args.kmer_size)
+	dico = build_kmer_dict(args.fastq_file, args.kmer_size)
 	digraph = build_graph(dico)
 	in_nodes = get_starting_nodes(digraph)
 	out_nodes = get_sink_nodes(digraph)
-	contig = get_contigs(digraph, in_nodes, out_nodes)
-	save_contig = save_contigs(contig, args.output_file)
-	fasta = fill(save_contig)
+	#contig = get_contigs(digraph, in_nodes, out_nodes)
+	#save_contig = save_contigs(contig, args.output_file)
+	#fasta = fill(save_contig)
 
-	#for i in seq : 
-	#	print(i)
-	#for i in kmer :
-	#	print(i)
+	for i in seq : 
+		print(i)
+	print(kmer)
+	print(dico)
 	#print(seq)
 	#print(kmer)
 	# Fonctions de dessin du graphe
