@@ -181,7 +181,30 @@ def get_sink_nodes(graph):
 	yield end_node
 
 def get_contigs(graph, in_node, out_node):
+	contig = []
 
+	for i in in_node :
+		contig[i] = in_node[i]
+
+	for i + 1 in graph.nodes - 1 :
+		contig.append(graph.adj[i])
+
+	for i in out_node :
+		contig.append(out_node[i])
+
+	contig = tuple(contig)
+
+
+
+
+	'''
+	for in_n in graph.nodes :
+		contig[i] = in_node[i]
+
+
+
+	for out_n in out_node :
+	'''
 
 
 
