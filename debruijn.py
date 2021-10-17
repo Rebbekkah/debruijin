@@ -24,324 +24,319 @@ random.seed(9001)
 from random import randint
 import statistics
 
-__author__ = "Goulancourt Rebecca & Jamay Théo"
+__author__ = "Théo Jamay et Rebecca Goulancourt"
 __copyright__ = "Universite Paris Diderot"
-__credits__ = ["Goulancourt Rebecca & Jamay Théo"]
+__credits__ = ["Théo Jamay et Rebecca Goulancourt"]
 __license__ = "GPL"
 __version__ = "1.0.0"
-__maintainer__ = "Goulancourt Rebecca & Jamay Théo"
-__email__ = "rgoulancourt@yahoo.com, jamay.theo@gmail.com"
+__maintainer__ = "Théo Jamay et Rebecca Goulancourt "
+__email__ = "jamay.theo@gmail.com et rgoulancourt@yahoo.com"
 __status__ = "Developpement"
 
 def isfile(path):
-	"""Check if path is an existing file.
-	  :Parameters:
-		  path: Path to the file
-	"""
-	if not os.path.isfile(path):
-		if os.path.isdir(path):
-			msg = "{0} is a directory".format(path)
-		else:
-			msg = "{0} does not exist.".format(path)
-		raise argparse.ArgumentTypeError(msg)
-	return path
+    """Check if path is an existing file.
+      :Parameters:
+          path: Path to the file
+    """
+    if not os.path.isfile(path):
+        if os.path.isdir(path):
+            msg = "{0} is a directory".format(path)
+        else:
+            msg = "{0} does not exist.".format(path)
+        raise argparse.ArgumentTypeError(msg)
+    return path
+
 
 def get_arguments():
-	"""Retrieves the arguments of the program.
-	  Returns: An object that contains the arguments
-	"""
-	# Parsing arguments
-	parser = argparse.ArgumentParser(description=__doc__, usage=
-									 "{0} -h"
-									 .format(sys.argv[0]))
-	parser.add_argument('-i', dest='fastq_file', type=isfile,
-						required=True, help="Fastq file")
-	parser.add_argument('-k', dest='kmer_size', type=int,
-						default=22, help="K-mer size (default 21)")
-	parser.add_argument('-o', dest='output_file', type=str,
-						default=os.curdir + os.sep + "contigs.fasta",
-						help="Output contigs in fasta file")
-	parser.add_argument('-f', dest='graphimg_file', type=str,
-						help="Save graph as image (png)")
-	return parser.parse_args()
+    """Retrieves the arguments of the program.
+      Returns: An object that contains the arguments
+    """
+    # Parsing arguments
+    parser = argparse.ArgumentParser(description=__doc__, usage=
+                                     "{0} -h"
+                                     .format(sys.argv[0]))
+    parser.add_argument('-i', dest='fastq_file', type=isfile,
+                        required=True, help="Fastq file")
+    parser.add_argument('-k', dest='kmer_size', type=int,
+                        default=22, help="K-mer size (default 21)")
+    parser.add_argument('-o', dest='output_file', type=str,
+                        default=os.curdir + os.sep + "contigs.fasta",
+                        help="Output contigs in fasta file")
+    parser.add_argument('-f', dest='graphimg_file', type=str,
+                        help="Save graph as image (png)")
+    return parser.parse_args()
 
 
 def read_fastq(fastq_file):
-	with open(fastq_file, "r") as fasta_file : 
-		lines = fasta_file.readlines()
-		for i in range(1, len(lines), 4) :
-			#print(lines)
-			yield lines[i].strip()
+    with open (fastq_file,"r") as fq_file :
+        text = fq_file.readlines()
+        for i in range(1,len(text),4) :
+            yield text[i].strip()
 
 
 def cut_kmer(read, kmer_size):
-	for i in range(len(read) - (kmer_size - 1)) :
-		yield read[i:i + kmer_size]
-		
-'''
-	start = 0
-	for i in read :
-		print(read)
-	for i in range(len(list(read))) :
-	#for i in enumerate(read) :
-		k_mer = sequence[start:kmer_size]
-		start = start + kmer_size
-		k_mer = ''.join(map(str, k_mer)) 
-		print(k_mer)
-		yield k_mer
-	
+    length_read=len(read)
+    for i in range(0,length_read-(kmer_size-1)):
+        yield read[i:i+kmer_size]
 
 
-	#l = len(read_list)
-	l = len(list(read))
-	#print("longueur = {}".format(l))
-	#print(read)
-	#print(type(read))
-	#read_list = list(read)
-	#read_list.append(read)
-	#print(read_list)
-
-	#print(type(read))
-	#for r in read :
-	#	print(r)
-
-	#row_read = next(read)
-	#r = list(read.next())
-	#print(r)
-	for i in range(0, l - kmer_size - 1, kmer_size) : 
-		#kmer = read.next()
-		#kmer = next(read)
-		#print(kmer)
-		#r = list(read.next())
-		kmer = read[i:i + kmer_size]
-		#kmer = read_list[i:i + kmer_size]
-		#kmer = row_read[i:i + kmer_size]
-		print(kmer)
-		yield kmer
-  '''
-  
 def build_kmer_dict(fastq_file, kmer_size):
-	kmer_dict = {}
-	gen_read = read_fastq(fastq_file)
-	#print(gen_read)
-	for read in gen_read :
-		cut = cut_kmer(read,kmer_size)
-		for k in cut :
-			if k not in kmer_dict :
-				kmer_dict[k] = 1
-			else :
-				kmer_dict[k] += 1
-
-	return kmer_dict
-
-
-
+    kmer_dict = {}
+    for read in read_fastq(fastq_file) :
+        for kmer in cut_kmer(read, kmer_size) :
+            if kmer not in kmer_dict :
+                kmer_dict[kmer] = 1
+            else :
+                kmer_dict[kmer] += 1
+    return kmer_dict
 
 
 def build_graph(kmer_dict):
-	cle = list(kmer_dict.keys())
-	l = len(kmer_dict.keys())
-	weight = list(kmer_dict.values())
-	print(l)
-	print(type(weight))
-	print(weight)
-	empty_digraph = nx.DiGraph()
+    graph = nx.DiGraph()
+    for key in kmer_dict :
+        graph.add_edge(key[:-1], key[1:],weight=kmer_dict[key])
+    return graph
 
-	digraph = empty_digraph.add_nodes_from(cle)
-	for i in range(l - 1) :
-		val1 = cle[i]
-		val2 = cle[i + 1]
-		digraph.add_edge(val1, val2, weight[i])  
-		#digraph.add_edge(val1, val2, [, weight[i]])        
-
-	yield digraph
-
-'''
-def get_starting_nodes(graph):
-	nodes = list(graph.nodes)
-	print(nodes)
-	edges = list(graph.edges)
-	print(edges)
-
-	start_node = graph.in_edge()
-
-'''
-'''
-	for node in nodes :
-		if len(graph.adj[node]) > 1 :
-			start_node.append(node)
-
-	yield start_node
-'''
-'''
-def get_sink_nodes(graph):
-	end_node = graph.out_edge()
-	yield end_node
-'''
-'''
-def get_contigs(graph, in_node, out_node):
-	contig = []
-
-	for i in in_node :
-		contig[i] = in_node[i]
-
-	for i + 1 in graph.nodes - 1 :
-		contig.append(graph.adj[i])
-
-	for i in out_node :
-		contig.append(out_node[i])
-
-	contig = tuple(contig)
-	yield contig
-'''
-
-'''
-	for in_n in graph.nodes :
-		contig[i] = in_node[i]
-
-
-
-	for out_n in out_node :
-'''
-
-
-
-
-
-#https://stackoverflow.com/questions/56918460/how-to-fix-error-object-of-type-generator-has-no-len-python/56918487
 
 def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
-	pass	
+    for path in path_list :
+        if delete_entry_node is False and delete_sink_node is False :
+            graph.remove_nodes_from(path[1:-1])
+        elif delete_entry_node is False :
+            graph.remove_nodes_from(path[1:])
+        elif delete_sink_node is False :
+            graph.remove_nodes_from(path[:-1])
+        else :
+            graph.remove_nodes_from(path)
+    return graph
+
 
 def std(data):
-	pass
+    return round(statistics.stdev(data),1)
 
 
-def select_best_path(graph, path_list, path_length, weight_avg_list, 
-					 delete_entry_node=False, delete_sink_node=False):
-	pass
+def select_best_path(graph, path_list, path_length, weight_avg_list,\
+    delete_entry_node=False, delete_sink_node=False):
+    if std(weight_avg_list) > 0 :
+        del path_list[weight_avg_list.index(max(weight_avg_list))]
+        graph = remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
+    elif std(path_length) > 0 :
+        del path_list[path_length.index(max(path_length))]
+        graph = remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
+    else :
+        del path_list[random.randint(0,len(weight_avg_list))]
+        graph = remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
+    return graph
+
 
 def path_average_weight(graph, path):
-	pass
+    return statistics.mean([d["weight"] for (u, v, d) in graph.subgraph(path).edges(data=True)])
+
 
 def solve_bubble(graph, ancestor_node, descendant_node):
-	pass
+    weight_avg_list = []
+    path_length = []
+    path_list = []
+    path_list_tmp = nx.all_simple_paths(graph,source = ancestor_node,target = descendant_node)
+    for path in path_list_tmp :
+        weight = path_average_weight(graph, path)
+        weight_avg_list.append(weight)
+        path_length.append(len(path))
+        path_list.append(path)
+    return select_best_path(graph, path_list, path_length, weight_avg_list, \
+        delete_entry_node=False, delete_sink_node=False)
+
 
 def simplify_bubbles(graph):
-	pass
+    bubble = False
+    for node in graph :
+        pred_list = []
+        predecessors = graph.predecessors(node)
+        for pred in predecessors :
+            pred_list.append(pred)
+        if len(pred_list) > 1 :
+            for i in range(0,len(pred_list)) :
+                for j in range(i+1,len(pred_list)) :
+                    noeud_ancêtre = nx.lowest_common_ancestor(graph, pred_list[i], pred_list[j])
+                    if noeud_ancêtre is not None :
+                        bubble = True
+                        break
+                if bubble :
+                    break
+        if bubble :
+            break
+    if bubble:
+        graph = simplify_bubbles(solve_bubble(graph, noeud_ancêtre, node))
+    return graph
+
 
 def solve_entry_tips(graph, starting_nodes):
-	pass
+    tips = False
+    for node in graph :
+        pred_list = []
+        predecessors = graph.predecessors(node)
+        for pred in predecessors :
+            pred_list.append(pred)
+        if len(pred_list) == 2 :
+            flag = 0
+            path_list = []
+            weight_avg_list = []
+            path_length = []
+            for in_node in starting_nodes :
+                way = nx.all_simple_paths(graph,source = in_node,target = node)
+                if way is not None :
+                    flag += 1
+                    for path in way :
+                        path_list.append(path)
+                        weight = path_average_weight(graph, path)
+                        weight_avg_list.append(weight)
+                        path_length.append(len(path))
+                if flag == 2 :
+                    tips = True
+                    break
+        if tips :
+            break
+    if tips :
+        graph = solve_entry_tips(select_best_path(graph, path_list, path_length, weight_avg_list,\
+            True, False), starting_nodes)
+    return graph
+
 
 def solve_out_tips(graph, ending_nodes):
-	pass
+    tips = False
+    for node in graph :
+        succ_list = []
+        successors = graph.successors(node)
+        for succ in successors :
+            succ_list.append(succ)
+        if len(succ_list) == 2 :
+            flag = 0
+            path_list = []
+            weight_avg_list = []
+            path_length = []
+            for out_node in ending_nodes :
+                way = nx.all_simple_paths(graph,source=node,target = out_node)
+                if way is not None :
+                    flag += 1
+                    for path in way :
+                        path_list.append(path)
+                        weight = path_average_weight(graph, path)
+                        weight_avg_list.append(weight)
+                        path_length.append(len(path))
+                if flag == 2 :
+                    tips = True
+                    break
+        if tips :
+            break
+    if tips :
+        graph = solve_entry_tips(select_best_path(graph, path_list, path_length, weight_avg_list,\
+            False, True), ending_nodes)
+    return graph
 
 def get_starting_nodes(graph):
-	nodes = list(graph.nodes)
-	print(nodes)
-	edges = list(graph.edges)
-	print(edges)
-
-	start_node = graph.in_edge()
-	yield start_node
-
+    in_nodes = []
+    for node in graph :
+        pred = graph.predecessors(node)
+        j = 0
+        for i in pred :
+            j += 1
+        if j == 0 :
+            in_nodes.append(node)
+    return in_nodes
 
 def get_sink_nodes(graph):
-	end_node = graph.out_edge()
-	yield end_node
-
+    out_nodes = []
+    for node in graph :
+        suc = graph.successors(node)
+        j = 0
+        for i in suc :
+            j += 1
+        if j == 0 :
+            out_nodes.append(node)
+    return out_nodes
 
 def get_contigs(graph, starting_nodes, ending_nodes):
-	contig = []
-
-	for i in starting_nodes :
-		contig[i] = starting_nodes[i]
-
-	#for i + 1 in graph.nodes - 1 :
-	#	contig.append(graph.adj[i])
-
-	for i in ending_nodes :
-		contig.append(ending_nodes[i])
-
-	contig = tuple(contig)
-	yield contig
+    list_contig = []
+    for i in range(0,len(starting_nodes)) :
+        for j in range(0,len(ending_nodes)) :
+            if nx.has_path(graph, starting_nodes[i], ending_nodes[j]) == True :
+                contig_path = nx.all_simple_paths(graph, starting_nodes[i], ending_nodes[j])
+                for contig in contig_path :
+                    seq = contig[0]
+                    for nucl in range(1,len(contig)) :
+                        seq += contig[nucl][-1]
+                list_contig.append((seq, len(seq)))
+    return list_contig
 
 
 def save_contigs(contigs_list, output_file):
-	with open(output_file, "w") as filout :
-		for contig in contigs_list :
-			filout.write(contigs_list[i].strip())
-
-	fast = fill(output_file)
-	yield fast
+    with open(output_file,"w") as out_file :
+        for contig in range(0,len(contigs_list)) :
+            out_file.write(">contig_{} len={}\n".format(contig, contigs_list[contig][1]))
+            text = fill(contigs_list[contig][0])
+            out_file.write("{}\n".format(text))
 
 
 def fill(text, width=80):
-	"""Split text with a line return to respect fasta format"""
-	return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
+    """Split text with a line return to respect fasta format"""
+    return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
 
 def draw_graph(graph, graphimg_file):
-	"""Draw the graph
-	"""                                    
-	fig, ax = plt.subplots()
-	elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
-	#print(elarge)
-	esmall = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] <= 3]
-	#print(elarge)
-	# Draw the graph with networkx
-	#pos=nx.spring_layout(graph)
-	pos = nx.random_layout(graph)
-	nx.draw_networkx_nodes(graph, pos, node_size=6)
-	nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
-	nx.draw_networkx_edges(graph, pos, edgelist=esmall, width=6, alpha=0.5, 
-						   edge_color='b', style='dashed')
-	#nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
-	# save image
-	plt.savefig(graphimg_file)
+    """Draw the graph
+    """
+    fig, ax = plt.subplots()
+    elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
+    #print(elarge)
+    esmall = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] <= 3]
+    #print(elarge)
+    # Draw the graph with networkx
+    #pos=nx.spring_layout(graph)
+    pos = nx.random_layout(graph)
+    nx.draw_networkx_nodes(graph, pos, node_size=6)
+    nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
+    nx.draw_networkx_edges(graph, pos, edgelist=esmall, width=6, alpha=0.5,\
+        edge_color='b', style='dashed')
+    #nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
+    # save image
+    plt.savefig(graphimg_file)
 
 
 def save_graph(graph, graph_file):
-	"""Save the graph with pickle
-	"""
-	with open(graph_file, "wt") as save:
-			pickle.dump(graph, save)
+    """Save the graph with pickle
+    """
+    with open(graph_file, "wt") as save:
+        pickle.dump(graph, save)
 
 
 #==============================================================
 # Main program
 #==============================================================
 def main():
-	"""
-	Main program function
-	"""
-	# Get arguments
-	args = get_arguments()
-	seq = read_fastq(args.fastq_file)
-	kmer = cut_kmer(seq, args.kmer_size)
-	dico = build_kmer_dict(args.fastq_file, args.kmer_size)
-	digraph = build_graph(dico)
-	in_nodes = get_starting_nodes(digraph)
-	out_nodes = get_sink_nodes(digraph)
-	#contig = get_contigs(digraph, in_nodes, out_nodes)
-	#save_contig = save_contigs(contig, args.output_file)
-	#fasta = fill(save_contig)
-
-	for i in seq : 
-		print(i)
-	print(kmer)
-	print(dico)
-	#print(seq)
-	#print(kmer)
-	# Fonctions de dessin du graphe
-	# A decommenter si vous souhaitez visualiser un petit 
-	# graphe
-	# Plot the graph
-	# if args.graphimg_file:
-	#     draw_graph(graph, args.graphimg_file)
-	# Save the graph in file
-	# if args.graph_file:
-	#     save_graph(graph, args.graph_file)
+    """
+    Main program function
+    """
+    # Get arguments
+    args = get_arguments()
+    kmer_dict = build_kmer_dict(args.fastq_file, args.kmer_size)
+    graph = build_graph(kmer_dict)
+    starting_nodes = get_starting_nodes(graph)
+    ending_nodes = get_sink_nodes(graph)
+    contigs_list = get_contigs(graph, starting_nodes, ending_nodes)
+    output_file = "contig.fasta"
+    save_contigs(contigs_list, output_file)
+    graph = simplify_bubbles(graph)
+    graph = solve_entry_tips(graph, starting_nodes)
+    graph = solve_out_tips(graph, ending_nodes)
+    # Fonctions de dessin du graphe
+    # A decommenter si vous souhaitez visualiser un petit
+    # graphe
+    # Plot the graph
+    # if args.graphimg_file:
+    #     draw_graph(graph, args.graphimg_file)
+    # Save the graph in file
+    # if args.graph_file:
+    #     save_graph(graph, args.graph_file)
 
 
 if __name__ == '__main__':
-	main()
+    main()
